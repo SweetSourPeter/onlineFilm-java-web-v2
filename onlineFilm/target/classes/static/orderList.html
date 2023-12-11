@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>在线电影售票系统</title>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+        <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+                $(document).ready(function(){
+                    var token = window.localStorage.getItem("token");
+                    axios({
+                            method:'get',
+                            url: 'http://localhost:8080/order/list',
+                            data:{},
+                            headers:{'token':token}
+                        }).then(function(response){
+                            console.log(response);
+                            if (response.data.resultCode == 0){
+                                    /*填充表格
+                                      <tr>
+                                      <th scope="row">1</th>
+                                      <td>6523232334343</td>
+                                      <td>倩女幽魂</td>
+                                      <td>2022-11-12 13:13:13</td>
+                                      <td>2022-10-11 03:05:13</td>
+                                      <td>3</td>
+                                      <td>52</td>
+                                      </tr>
+                                      */
+                                  $.each(response.data.data,function(index,row){
+                                            var html ="<tr>";
+                                            html=html + '<th score="row">' + (index+1) + '</th>';
+                                            html = html + '<td>' + row.orderNo + '</td>';
+                                            html = html + '<td>' + row.filmName + '</td>';
+                                            html = html + '<td>' + row.showTime + '</td>';
+                                            html = html + '<td>' + row.buyTime + '</td>';
+                                            html = html + '<td>' + row.quality + '</td>';
+                                            html = html + '<td>' + row.money + '</td>';
+                                            html = html + '</tr>';
+                                            $('tbody').append(html);
+                                  });
+                            }else{
+                                    $('#message').text(response.data.message+':'+response.data.reason);
+                                    if (response.data.resultCode == 3){
+                                          $('#errorDlg').on('hide.bs.modal',function(){
+                                             window.location.href="http://localhost:8080/login.html";
+                                        });
+                                    }
+                                    $('#errorDlg').modal({backdrop: 'static', keyboard: false});
+
+
+                            }
+                            }).catch(function(error){
+                                 console.log(error);
+                            });
+                })
+
+                function logout(){
+                            var token = window.localStorage.getItem("token");
+                            axios({
+                                method:'get',
+                                url: 'http://localhost:8080/account/logout',
+                                data:{},
+                                headers:{'token':token}
+                            });
+                            window.location.href="http://localhost:8080/login.html";
+
+                }
+        </script>
+    </head>
+    <body>
+
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">我的订单</a></li>
+                    <li><a href="http://localhost:8080/scheduleList.html">场次列表</a></li>
+                    <li><a href="http://localhost:8080/salesSummary.html">销售统计</a></li>
+                    <li><a href="http://localhost:8080/backup.html">备份数据</a></li>
+                    <li><a href="http://localhost:8080/recover.html">数据恢复</a></li>
+                    <li><a href="#" onclick="logout()">退出</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+        <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">序号</th>
+                <th scope="col">订单编号</th>
+                <th scope="col">电影名称</th>
+                <th scope="col">放映时间</th>
+                <th scope="col">购票时间</th>
+                <th scope="col">购票数量</th>
+                <th scope="col">金额</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+    </body>
+
+    <!-- Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="errorDlg">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">提示</h4>
+                </div>
+                <div class="modal-body">
+                    <p id="message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</html>
+

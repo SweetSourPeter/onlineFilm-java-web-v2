@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Title Page</title>
+
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+                $(document).ready(function(){
+                        $('#persistDlg').on('hidden.bs.modal',function(){
+                            $('.modal-backdrop').remove();
+                        });
+
+                        $('.modal-title').html("提示");
+                        $('.modal-body').html("执行数据备份？");
+                        $('#confirm').on('click',function(){
+                              $('.modal-body').html("正在备份......");
+
+                              var token = window.localStorage.getItem("token");
+                              axios({
+                                    method:'get',
+                                    url: 'http://localhost:8080/persist/store',
+                                    data:{},
+                                    headers:{'token':token}
+                              }).then(function(response){
+                                       console.log(response);
+                                       $('#confirm').unbind('click');
+                                       $('#cancel').remove();
+                                       if (response.data.resultCode == 0){
+                                            $('.modal-body').html("数据备份成功");
+                                       }else{
+                                            $('.modal-body').text(response.data.message+':'+response.data.reason);
+                                            if (response.data.resultCode == 3){
+                                                     $('#persistDlg').on('hide.bs.modal',function(){
+                                                              window.location.href="http://localhost:8080/login.html";
+                                                     });
+                                            }
+                                       }
+                                        $('#persistDlg').modal({backdrop: 'static', keyboard: false});
+                              }).catch(function(error){
+                                 console.log(error);
+                              });
+                             $('#persistDlg').modal({backdrop: 'static', keyboard: false});
+                        });
+                        $('#persistDlg').modal({backdrop: 'static', keyboard: false});
+
+
+                });
+
+                function logout(){
+                            var token = window.localStorage.getItem("token");
+                            axios({
+                                method:'get',
+                                url: 'http://localhost:8080/account/logout',
+                                data:{},
+                                headers:{'token':token}
+                            });
+                            window.location.href="http://localhost:8080/login.html";
+
+                }
+        </script>
+    </head>
+    <body>
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+                    <div>
+                        <ul class="nav navbar-nav">
+                            <li><a href="http://localhost:8080/orderList.html">我的订单</a></li>
+                            <li><a href="http://localhost:8080/scheduleList.html">场次列表</a></li>
+                            <li><a href="http://localhost:8080/salesSummary.html">销售统计</a></li>
+                            <li class="active"><a href="#">备份数据</a></li>
+                            <li><a href="http://localhost:8080/recover.html">数据恢复</a></li>
+                            <li><a href="#" onclick="logout()">退出</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <!-- Modal -->
+            <div class="modal fade" tabindex="-1" role="dialog" id="persistDlg">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title"></h4>
+                        </div>
+                        <div class="modal-body">
+                            <p></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="confirm">确定</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="cancel">取消</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+    </body>
+</html>
